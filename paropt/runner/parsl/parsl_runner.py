@@ -15,6 +15,7 @@ class ParslRunner:
     self.experiment = experiment
     self.parsl_config = parsl_config
     self.parsl_app = parsl_app
+    self._dfk = None
     self.script_template_path = experiment['script_template_path']
     with open(self.script_template_path, 'r') as f:
       self.command = f.read()
@@ -53,7 +54,7 @@ class ParslRunner:
   def run(self, debug=False):
     if debug:
       parsl.set_stream_logger()
-    parsl.load(self.parsl_config)
+    self._dfk = parsl.load(self.parsl_config)
     try:
       for config in self.optimizer:
         logger.info(f'Writing script with config {config}')
