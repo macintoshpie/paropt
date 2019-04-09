@@ -67,7 +67,13 @@ class ParslRunner:
     except Exception as e:
       logger.info('Whoops, something went wrong... {e}')
       logger.exception(traceback.format_exc())
-    logger.info('Exiting program')
+    logger.info('Finished running tasks')
+  
+  def cleanup(self):
+    """Cleanup DFK and parsl"""
+    logger.info('Cleaning up parsl DFK')
+    self._dfk.cleanup()
+    parsl.clear()
   
   def getMax(self):
     return self.optimizer.getMax()
