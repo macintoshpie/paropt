@@ -2,6 +2,8 @@ from .base_optimizer import BaseOptimizer
 import itertools
 from sys import maxsize
 
+from paropt.storage.entities import Parameter
+
 class GridSearch(BaseOptimizer):
   def __init__(self, command_params, num_configs_per_param):
     """
@@ -9,7 +11,7 @@ class GridSearch(BaseOptimizer):
     """
     self.max_outcome = -maxsize
     self.grid_search_points = []
-    self.command_params = command_params.copy() # copying to ensure dict not modifed while calculating points
+    self.command_params = Parameter.parametersToDict(command_params)
     self.num_configs_per_param = num_configs_per_param
 
     ncpp = self.num_configs_per_param

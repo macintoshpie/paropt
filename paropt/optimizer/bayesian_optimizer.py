@@ -1,10 +1,11 @@
 import logging
+from random import randint
 
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
 
 from .base_optimizer import BaseOptimizer
-from random import randint
+from paropt.storage.entities import Parameter
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ class BayesianOptimizer(BaseOptimizer):
   def __init__(self, command_params, n_init, n_iter, utility=None, storage=None):
     self.optimizer = BayesianOptimization(
       f=None,
-      pbounds=command_params,
+      pbounds=Parameter.parametersToDict(command_params),
       verbose=2,
       random_state=randint(1, 100),
     )
@@ -38,15 +39,20 @@ class BayesianOptimizer(BaseOptimizer):
   def _load(self):
     if self.storage == None:
       return
-      # raise Exception('Unable to load into model, no storage set')
+
     previous_trials = self.storage.getPreviousTrials()
     for trial in previous_trials:
       params_dict = self._trialParamsToDict(trial)
       logger.info(f'Registering: {params_dict}, {trial.outcome}')
-      self.optimizer.register(
-        params=params_dict,
-        target=trial.outcome
-      )
+      try:
+        self.optimizer.register(
+          params=params_dict,
+          target=trial.outcome
+        )
+      except KeyError:
+        logger.warning(
+          f"Config already registered, ignoring; config: {params_dict}, outcome: {trial.outcome}"
+        )
   
   def __iter__(self):
     return self

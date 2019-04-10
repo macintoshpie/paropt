@@ -15,9 +15,7 @@ class ParslRunner:
     self.experiment = experiment
     self.parsl_config = parsl_config
     self.parsl_app = parsl_app
-    self.script_template_path = experiment['script_template_path']
-    with open(self.script_template_path, 'r') as f:
-      self.command = f.read()
+    self.command = experiment.command_template_string
     self.optimizer = optimizer
     self.storage = storage
 
@@ -45,7 +43,7 @@ class ParslRunner:
 
   def _writeScript(self, params):
     script = Template(self.command).safe_substitute(params)
-    script_path = f'{self.templated_scripts_dir}/timeScript_{self.experiment["tool"]["name"]}_{int(time.time())}.sh'
+    script_path = f'{self.templated_scripts_dir}/timeScript_{self.experiment.tool_name}_{int(time.time())}.sh'
     with open(script_path, "w") as f:
       f.write(script)
     return script_path, script
@@ -58,6 +56,10 @@ class ParslRunner:
       for config in self.optimizer:
         logger.info(f'Writing script with config {config}')
         script_path, script_content = self._writeScript(config)
+        # TODO: add user hook for customization
+        # Hook should take in tool param configuration and current parsl configuration as arguments
+        # Hook should return a new parsl configuration if it needs to be changed, or None if not
+        # self.prerun_hook(config, self.parsl_config)
         logger.info(f'Running script {script_path}')
         result = self.parsl_app(script_content).result()
         self._validateResult(config, result)
